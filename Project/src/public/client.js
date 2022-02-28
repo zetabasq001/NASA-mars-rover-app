@@ -1,4 +1,4 @@
-const store = Immutable.Map({
+let store = Immutable.Map({
     user: Immutable.Map({ name: 'Student' }),
     rovers: Immutable.List(['Curiosity', 'Opportunity', 'Spirit'])
 });
@@ -6,8 +6,8 @@ const store = Immutable.Map({
 // add our markup to the page
 const root = document.getElementById('root')
 
-const updateStore = (store, newState) => {
-    store = store.merge(newState);
+const updateStore = (state, newState) => {
+    store = state.merge(newState);
     render(root, store);
 }
 
@@ -59,13 +59,20 @@ const Greeting = name => {
     `
 }
 
+const addTabs = state => {
+    return (`<div>
+                <h2>${state.getIn(['rovers'])[0]}</h2>
+                <p></p>
+            </div>`)
+}
+
 // Example of a pure function that renders infomation requested from the backend
 const ImageOfTheDay = apod => {
     
     // If image does not already exist, or it is not from today -- request it again
     const today = new Date();
     if (!apod || (new Date(apod.date).getDate() === today.getDate())) {
-        getImageOfTheDay();
+        getImageOfTheDay(store);
     }
 
     // check if the photo of the day is actually type video!
@@ -85,15 +92,26 @@ const ImageOfTheDay = apod => {
     }
 }
 
+const pictureGallery = state => {
+
+    getRoverNavigationPhotos(state);
+    
+    return (
+    `<div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>`)
+}
+
 // ------------------------------------------------------  API CALLS
 
 // Example API call
-const getImageOfTheDay = () => {
+const getImageOfTheDay = state => {
 
     fetch('http://localhost:3000/apod')
         .then(res => res.json())
-        .then(apod => Immutable.Map(apod))
-        .then(newState => updateStore(store, newState))
+        .then(apod => updateStore(state, apod))
 
 }
 
@@ -101,6 +119,8 @@ const getRoverNavigationPhotos = state => {
 
     fetch('http://localhost:3000/photos')
         .then(res => res.json())
-        .then(pics => updateStore(state, { pics }))
+        .then(pics => updateStore(state, pics))
+
 }
 
+pictureGallery(store);
