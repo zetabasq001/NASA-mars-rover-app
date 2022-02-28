@@ -18,12 +18,14 @@ const baseUrl = 'https://api.nasa.gov';
 
 // your API calls
 app.get('/photos', async (req, res) => {
-    const name = 'spirit';
-    const partUrl = `/mars-photos/api/v1/rovers/${name}/photos?sol=1&camera=navcam`;
+    const names = ['curiosity', 'opportunity', 'spirit'];
+    const allUrls = names.map(name => `/mars-photos/api/v1/rovers/${name}/photos?sol=1&camera=navcam`);
     try {
-        let photos = await fetch(baseUrl + partUrl + api_key)
-            .then(res => res.json())
-        res.send({ photos })
+        let photos = await Promise.all(allUrls.map(async partUrl => {
+            return (await fetch(baseUrl + partUrl + api_key)
+            .then(res => res.json()));
+        }))
+        res.send({ photos });
     } catch(err) {
         console.log('Error fetching photos:', err);
     }
