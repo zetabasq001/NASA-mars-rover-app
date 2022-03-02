@@ -12,8 +12,12 @@ const updateStore = (root, state, newState, app) => {
     render(root, app)(store);
 }
 
-const render = (root, app) => state => {
-    root.innerHTML = app(state);
+const render = (root, app) => async state => {
+    try {
+        root.innerHTML = await app(state);
+    } catch(err) {
+        root.innerHTML = "<p>Loading</p>";
+    }
 }
 
 // create content
@@ -42,16 +46,19 @@ const App = state => {
 }
 
 const App2 = state => {
-    return `${pictureGallery(state, '')}`
+
+    return `${pictureGallery(state.getIn(['rovers']).toJS().indexOf("Curiosity"))}`;
 }
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
     render(root1, App)(store);
-    setInterval(() => {
-        render(root2, App2)(store);}
-        , 3000);
+    render(root2, App2)(store);
 });
+
+setInterval(() => {
+    render(root2, App2)(store);
+}, 3000);
 
 // ------------------------------------------------------  COMPONENTS
 
@@ -100,25 +107,31 @@ const ImageOfTheDay = apod => {
     }
 }
 
-const pictureGallery = (state, rover) => {
-
-    if(!store.getIn(['photos'])) {
-        getRoverNavigationPhotos(state);
+const pictureGallery = rover => {
+  
+    const get = store.getIn(['photos']);
+    if(!get) {
+        getRoverNavigationPhotos(store);
     }
+    
+    const len = get[rover].photos.length;
+    const randomly = Math.floor(Math.random() * len);
+    const pics = get[rover].photos[randomly];
 
-    const len = store.getIn(['photos'])[0].photos.length;
-    const rand = Math.floor(Math.random() * len);
-    const pics = store.getIn(['photos'])[0].photos[rand];
-
-    if(len > 0){
+    if(len > 0) {
         return (
             `<div>
                 <div><img src="${pics.img_src}" height ="350px" width="50%"/></div>
-                <div><p></p><div/>
+                <ul>
+                    <li>Martian Rover: ${pics.rover.name}</li>
+                    <li>Launch Date: ${pics.rover.launch_date}</li>
+                    <li>Landing Date: ${pics.rover.landing_date}</li>
+                    <li>Status: ${pics.rover.status}</li>
+                    <li>Date of Photos: ${pics.earth_date}</li>
+                <ul/>
             </div>`)
     }
 }
-
 
 // ------------------------------------------------------  API CALLS
 
@@ -138,4 +151,3 @@ const getRoverNavigationPhotos = state => {
         .then(pics => updateStore(root2, state, pics, App2))
 
 }
-
