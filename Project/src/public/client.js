@@ -4,15 +4,16 @@ let store = Immutable.Map({
 });
 
 // add our markup to the page
-const root = document.getElementById('root')
+const root1 = document.getElementById('root1');
+const root2 = document.getElementById('root2');
 
-const updateStore = (state, newState) => {
+const updateStore = (root, state, newState, app) => {
     store = state.merge(newState);
-    render(root, store);
+    render(root, app)(store);
 }
 
-const render = async (root, state) => {
-    root.innerHTML = App(state)
+const render = (root, app) => state => {
+    root.innerHTML = app(state);
 }
 
 // create content
@@ -40,10 +41,17 @@ const App = state => {
     `
 }
 
+const App2 = state => {
+    return `${pictureGallery(state, '')}`
+}
+
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
-    render(root, store)
-})
+    render(root1, App)(store);
+    setInterval(() => {
+        render(root2, App2)(store);}
+        , 3000);
+});
 
 // ------------------------------------------------------  COMPONENTS
 
@@ -92,17 +100,25 @@ const ImageOfTheDay = apod => {
     }
 }
 
-const pictureGallery = state => {
+const pictureGallery = (state, rover) => {
 
-    getRoverNavigationPhotos(state);
-    
-    return (
-    `<div>
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>`)
+    if(!store.getIn(['photos'])) {
+        getRoverNavigationPhotos(state);
+    }
+
+    const len = store.getIn(['photos'])[0].photos.length;
+    const rand = Math.floor(Math.random() * len);
+    const pics = store.getIn(['photos'])[0].photos[rand];
+
+    if(len > 0){
+        return (
+            `<div>
+                <div><img src="${pics.img_src}" height ="350px" width="50%"/></div>
+                <div><p></p><div/>
+            </div>`)
+    }
 }
+
 
 // ------------------------------------------------------  API CALLS
 
@@ -111,7 +127,7 @@ const getImageOfTheDay = state => {
 
     fetch('http://localhost:3000/apod')
         .then(res => res.json())
-        .then(apod => updateStore(state, apod))
+        .then(apod => updateStore(root1, state, apod, App))
 
 }
 
@@ -119,8 +135,7 @@ const getRoverNavigationPhotos = state => {
 
     fetch('http://localhost:3000/photos')
         .then(res => res.json())
-        .then(pics => updateStore(state, pics))
+        .then(pics => updateStore(root2, state, pics, App2))
 
 }
 
-pictureGallery(store);
