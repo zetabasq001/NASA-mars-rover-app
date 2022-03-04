@@ -6,6 +6,7 @@ let store = Immutable.Map({
 // add our markup to the page
 const root1 = document.getElementById('root1');
 const root2 = document.getElementById('root2');
+const nav = document.getElementById('nav');
 
 const updateStore = (root, state, newState, app) => {
     store = state.merge(newState);
@@ -16,39 +17,64 @@ const render = (root, app) => async state => {
     try {
         root.innerHTML = await app(state);
     } catch(err) {
-        root.innerHTML = "<p>Loading</p>";
+        root.innerHTML = "<h1>Loading...</h1>";
     }
 }
 
 // create content
 const App = state => {
 
-    return `
-        <header></header>
-        <main>
-            ${Greeting(state.getIn(['user', 'name']))}
-            <section>
-                <h3>Put things on the page!</h3>
-                <p>Here is an example section.</p>
-                <p>
-                    One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
-                    the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
-                    This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other
-                    applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image
-                    explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
-                    but generally help with discoverability of relevant imagery.
-                </p>
-                ${ImageOfTheDay(state.getIn(['image']))}
-            </section>
-        </main>
-        <footer></footer>
-    `
+    return (`
+        ${Greeting(state.getIn(['user', 'name']))}
+        <h1>
+            One of the most popular websites at NASA is the Astronomy Picture of the Day (APOD).
+        </h1>
+        ${ImageOfTheDay(state.getIn(['image']))}
+    `)
 }
 
 const App2 = state => {
-
-    return `${pictureGallery(state.getIn(['rovers']).toJS().indexOf("Curiosity"))}`;
+    if (!state.toJS().roverIndex){
+        const newState =  state.setIn(['roverIndex'], 0);
+        store = newState.merge(state);
+    }
+    return `${pictureGallery(state.toJS().roverIndex)}`;
 }
+
+nav.addEventListener('click', event => {
+
+    const content = event.target.textContent;
+    const rovers = store.getIn(['rovers']).toJS();
+    
+    if (content !== 'APOD Image'){
+
+        const button = document.getElementById('btn');
+        button.scrollIntoView({behavior: 'smooth'});
+
+        if (content.includes('C')) {
+
+            const roverIndex = rovers.indexOf('Curiosity');
+            const newState = store.setIn(['roverIndex'], roverIndex);
+            store = store.merge(newState);
+
+        } else if (content.includes('O')) {
+            const roverIndex = rovers.indexOf('Opportunity');
+            const newState = store.setIn(['roverIndex'], roverIndex);
+            store = store.merge(newState);
+        }
+        else {
+
+            const roverIndex = rovers.indexOf('Spirit');
+            const newState = store.setIn(['roverIndex'], roverIndex);
+            store = store.merge(newState);
+        } 
+    } else {
+    
+        const button0 = document.getElementById('btn0');
+        button0.scrollIntoView({behavior: 'smooth'})      
+    }
+
+});
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
@@ -74,13 +100,6 @@ const Greeting = name => {
     `
 }
 
-const addTabs = state => {
-    return (`<div>
-                <h2>${state.getIn(['rovers'])[0]}</h2>
-                <p></p>
-            </div>`)
-}
-
 // Example of a pure function that renders infomation requested from the backend
 const ImageOfTheDay = apod => {
     
@@ -100,7 +119,7 @@ const ImageOfTheDay = apod => {
             `)
         } else {
             return (`
-                <img src="${apod.url}" height="350px" width="100%" />
+                <img src="${apod.url}" id="btn0"/>
                 <p>${apod.explanation}</p>
             `)
         }
@@ -119,17 +138,17 @@ const pictureGallery = rover => {
     const pics = get[rover].photos[randomly];
 
     if(len > 0) {
-        return (
-            `<div>
-                <div><img src="${pics.img_src}" height ="350px" width="50%"/></div>
+        return (`
+                <img src="${pics.img_src}" id="btn"/>
                 <ul>
                     <li>Martian Rover: ${pics.rover.name}</li>
+                    <li>Camera: ${pics.camera.full_name}
                     <li>Launch Date: ${pics.rover.launch_date}</li>
                     <li>Landing Date: ${pics.rover.landing_date}</li>
                     <li>Status: ${pics.rover.status}</li>
                     <li>Date of Photos: ${pics.earth_date}</li>
                 <ul/>
-            </div>`)
+            `)
     }
 }
 

@@ -9,6 +9,11 @@ body {
 
 header {
   /* header styles */
+  border-bottom: 10px solid sienna;
+}
+
+button {
+    font-size: 36px;
 }
 
 main {
@@ -29,10 +34,24 @@ footer {
 
 @media (min-width: 1224px) {
   /* use mobile */
+    /* header, #root1, #root2 {
+        display: flex;
+        flex-direction: row;
+    } */
+    
+    ul {
+        font-size: 36px;
+    }
+
+    img {
+        height: 500px;
+        width: 700px;
+    }
 }
 
 /* -------------------  LARGE SCREENS  -------------- */
 
 @media (min-width: 1824px) {
   /* use mobile */
+  
 }
