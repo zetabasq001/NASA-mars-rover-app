@@ -21,6 +21,10 @@ main {
   padding: 20px;
 }
 
+#root1 {
+    font-size: 24px;
+}
+
 footer {
   /* footer styles */
 }

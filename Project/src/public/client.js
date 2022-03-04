@@ -26,7 +26,7 @@ const App = state => {
 
     return (`
         ${Greeting(state.getIn(['user', 'name']))}
-        <h1>
+        <h1 id="btn0">
             One of the most popular websites at NASA is the Astronomy Picture of the Day (APOD).
         </h1>
         ${ImageOfTheDay(state.getIn(['image']))}
@@ -84,7 +84,7 @@ window.addEventListener('load', () => {
 
 setInterval(() => {
     render(root2, App2)(store);
-}, 3000);
+}, 5000);
 
 // ------------------------------------------------------  COMPONENTS
 
@@ -119,7 +119,7 @@ const ImageOfTheDay = apod => {
             `)
         } else {
             return (`
-                <img src="${apod.url}" id="btn0"/>
+                <img src="${apod.url}"/>
                 <p>${apod.explanation}</p>
             `)
         }
@@ -133,23 +133,22 @@ const pictureGallery = rover => {
         getRoverNavigationPhotos(store);
     }
     
-    const len = get[rover].photos.length;
+    const len = get[rover].length;
     const randomly = Math.floor(Math.random() * len);
-    const pics = get[rover].photos[randomly];
+    const pics = get[rover][randomly];
 
-    if(len > 0) {
-        return (`
-                <img src="${pics.img_src}" id="btn"/>
-                <ul>
-                    <li>Martian Rover: ${pics.rover.name}</li>
-                    <li>Camera: ${pics.camera.full_name}
-                    <li>Launch Date: ${pics.rover.launch_date}</li>
-                    <li>Landing Date: ${pics.rover.landing_date}</li>
-                    <li>Status: ${pics.rover.status}</li>
-                    <li>Date of Photos: ${pics.earth_date}</li>
-                <ul/>
-            `)
-    }
+    return (`
+            <img src="${pics.img_src}" id="btn"/>
+            <ul>
+                <li>Martian Rover Name: ${pics.rover.name}</li>
+                <li>Type of Camera: ${pics.camera.full_name}
+                <li>Launch Date from Earth: ${pics.rover.launch_date}</li>
+                <li>Landing Date on Mars: ${pics.rover.landing_date}</li>
+                <li>Status: ${pics.rover.status}</li>
+                <li>Date of Photos Taken: ${pics.earth_date}</li>
+            <ul/>
+        `)
+    
 }
 
 // ------------------------------------------------------  API CALLS
