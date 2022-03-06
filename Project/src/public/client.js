@@ -1,6 +1,6 @@
 let store = Immutable.Map({
-    user: Immutable.Map({ name: 'Student' }),
-    rovers: Immutable.List(['Curiosity', 'Opportunity', 'Spirit'])
+    user: Immutable.Map({ name: 'Earthling' }),
+    rovers: Immutable.List(['Perseverance', 'Curiosity', 'Opportunity', 'Spirit'])
 });
 
 // add our markup to the page
@@ -61,9 +61,13 @@ nav.addEventListener('click', event => {
             const roverIndex = rovers.indexOf('Opportunity');
             const newState = store.setIn(['roverIndex'], roverIndex);
             store = store.merge(newState);
+
+        } else if (content.includes('P')) {
+            const roverIndex = rovers.indexOf('Perseverance');
+            const newState = store.setIn(['roverIndex'], roverIndex);
+            store = store.merge(newState);
         }
         else {
-
             const roverIndex = rovers.indexOf('Spirit');
             const newState = store.setIn(['roverIndex'], roverIndex);
             store = store.merge(newState);
@@ -84,7 +88,7 @@ window.addEventListener('load', () => {
 
 setInterval(() => {
     render(root2, App2)(store);
-}, 5000);
+}, 3000);
 
 // ------------------------------------------------------  COMPONENTS
 
@@ -127,20 +131,25 @@ const ImageOfTheDay = apod => {
 }
 
 const pictureGallery = rover => {
-  
+
     const get = store.getIn(['photos']);
     if(!get) {
         getRoverNavigationPhotos(store);
     }
-    
-    const len = get[rover].length;
-    const randomly = Math.floor(Math.random() * len);
-    const pics = get[rover][randomly];
 
+    const got = get[rover]  
+    //.filter(o => o.camera.name === 'NAVCAM' || o.camera.name === 'PANCAM');
+
+    const len = got.length;
+    const randomly = Math.floor(Math.random() * len);
+    const pics = got[randomly];
+    
     return (`
             <img src="${pics.img_src}" id="btn"/>
             <ul>
+                <li>${len} Most Recent Photo(s) of</li>
                 <li>Martian Rover Name: ${pics.rover.name}</li>
+                <li>Picture ID: ${pics.id}</li>
                 <li>Type of Camera: ${pics.camera.full_name}
                 <li>Launch Date from Earth: ${pics.rover.launch_date}</li>
                 <li>Landing Date on Mars: ${pics.rover.landing_date}</li>
@@ -148,7 +157,6 @@ const pictureGallery = rover => {
                 <li>Date of Photos Taken: ${pics.earth_date}</li>
             <ul/>
         `)
-    
 }
 
 // ------------------------------------------------------  API CALLS

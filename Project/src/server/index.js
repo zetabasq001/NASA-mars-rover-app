@@ -15,42 +15,24 @@ app.use('/', express.static(path.join(__dirname, '../public')))
 
 const api_key = `api_key=${process.env.API_KEY}`;
 const baseUrl = 'https://api.nasa.gov/mars-photos/api/v1';
+const names = ['perseverance', 'curiosity', 'opportunity', 'spirit'];
 
 // your API calls
 app.get('/photos', async (req, res) => {
 
-    const names = ['curiosity', 'opportunity', 'spirit'];
-    const allUrls = names.map(name => `/manifests/${name}/?`);
+    const allUrls = names.map(name => `/rovers/${name}/latest_photos?`);
+
     try {
-        let manifests = await Promise.all(allUrls.map(async partUrl => {
+        let results = await Promise.all(allUrls.map(async partUrl => {
             return (await fetch(baseUrl + partUrl + api_key)
             .then(res => res.json()));
         }));
-
-        const shapeManifests = 
-            manifests.map(obj => obj.photo_manifest.photos)
-            //.map(a => a.filter(o => o.cameras.includes('PANCAM') || o.cameras.includes('NAVCAM')))
-            .map(a => a.reduce((p, c) => {
-                return parseInt(p.total_photos) > parseInt(c.total_photos) ? p : c;
-            }))
-            .map(a => a.sol);
-
-            const allUrls2 = 
-                names.map((name, i) => `/rovers/${name}/photos?sol=${shapeManifests[i]}&`);
-            try {
-                let results = await Promise.all(allUrls2.map(async partUrl => {
-                    return (await fetch(baseUrl + partUrl + api_key)
-                    .then(res => res.json()));
-                }));
-
-                const photos = results.map(o => o.photos);
-                res.send({ photos });
-            } catch(err) {
-                console.log('Error fetching photos:', err);
-            }
+        
+        const photos = results.map(obj => obj.latest_photos);
+        res.send({ photos });
 
     } catch(err) {
-        console.log('Error fetching manifests:', err);
+        console.log('Error fetching photos:', err);
     }
 })
 
@@ -65,4 +47,4 @@ app.get('/apod', async (req, res) => {
     }
 })
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
