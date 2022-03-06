@@ -1,12 +1,14 @@
+// store app data pulled from NASA api
 let store = Immutable.Map({
     user: Immutable.Map({ name: 'Earthling' }),
     rovers: Immutable.List(['Perseverance', 'Curiosity', 'Opportunity', 'Spirit'])
 });
 
-// add our markup to the page
+// add the markup to the page
 const root1 = document.getElementById('root1');
 const root2 = document.getElementById('root2');
 const nav = document.getElementById('nav');
+
 
 const updateStore = (root, state, newState, app) => {
     store = state.merge(newState);
@@ -26,9 +28,9 @@ const App = state => {
 
     return (`
         ${Greeting(state.getIn(['user', 'name']))}
-        <h1 id="btn0">
+        <p id="btn0">
             One of the most popular websites at NASA is the Astronomy Picture of the Day (APOD).
-        </h1>
+        <p>
         ${ImageOfTheDay(state.getIn(['image']))}
     `)
 }
@@ -138,8 +140,6 @@ const pictureGallery = rover => {
     }
 
     const got = get[rover]  
-    //.filter(o => o.camera.name === 'NAVCAM' || o.camera.name === 'PANCAM');
-
     const len = got.length;
     const randomly = Math.floor(Math.random() * len);
     const pics = got[randomly];
