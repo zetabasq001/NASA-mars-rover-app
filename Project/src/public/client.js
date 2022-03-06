@@ -9,12 +9,13 @@ const root1 = document.getElementById('root1');
 const root2 = document.getElementById('root2');
 const nav = document.getElementById('nav');
 
-
+// update store and renders app component
 const updateStore = (root, state, newState, app) => {
     store = state.merge(newState);
     render(root, app)(store);
 }
 
+// renders app component
 const render = (root, app) => async state => {
     try {
         root.innerHTML = await app(state);
@@ -23,7 +24,7 @@ const render = (root, app) => async state => {
     }
 }
 
-// create content
+// component renders APOD Image
 const App = state => {
 
     return (`
@@ -35,30 +36,47 @@ const App = state => {
     `)
 }
 
+// component renders mars rover pictures
 const App2 = state => {
+
+    // if the index of active rover is not set in store set to default 0
     if (!state.toJS().roverIndex){
         const newState =  state.setIn(['roverIndex'], 0);
         store = newState.merge(state);
     }
-    return `${pictureGallery(state.toJS().roverIndex)}`;
+
+    // function renders active rover pictures and information from the backend
+    return `${randomRoverPictures(state.toJS().roverIndex)}`;
 }
 
+// dynamic navigation bar
 nav.addEventListener('click', event => {
 
+    // for each button clicked get content
     const content = event.target.textContent;
+
+    // obtain the rovers from store
     const rovers = store.getIn(['rovers']).toJS();
     
+    // if a rover button name is clicked
     if (content !== 'APOD Image'){
 
+        // scroll down to rover section
         const button = document.getElementById('btn');
         button.scrollIntoView({behavior: 'smooth'});
 
+        // depending on which rover
         if (content.includes('C')) {
-
+            
+            // get index of rover in array located in store
             const roverIndex = rovers.indexOf('Curiosity');
-            const newState = store.setIn(['roverIndex'], roverIndex);
-            store = store.merge(newState);
 
+            // add the current index of active rover to store
+            const newState = store.setIn(['roverIndex'], roverIndex);
+
+            // merge new state of the app to store
+            store = store.merge(newState);
+           
         } else if (content.includes('O')) {
             const roverIndex = rovers.indexOf('Opportunity');
             const newState = store.setIn(['roverIndex'], roverIndex);
@@ -75,7 +93,7 @@ nav.addEventListener('click', event => {
             store = store.merge(newState);
         } 
     } else {
-    
+        // scroll to APOD Image
         const button0 = document.getElementById('btn0');
         button0.scrollIntoView({behavior: 'smooth'})      
     }
@@ -88,13 +106,14 @@ window.addEventListener('load', () => {
     render(root2, App2)(store);
 });
 
+// renders a random rover picture every 3 seconds
 setInterval(() => {
     render(root2, App2)(store);
 }, 3000);
 
 // ------------------------------------------------------  COMPONENTS
 
-// Pure function that renders conditional information -- THIS IS JUST AN EXAMPLE, you can delete it.
+// function to greet viewers
 const Greeting = name => {
     if (name) {
         return `
@@ -106,7 +125,7 @@ const Greeting = name => {
     `
 }
 
-// Example of a pure function that renders infomation requested from the backend
+// function that renders infomation requested from the backend
 const ImageOfTheDay = apod => {
     
     // If image does not already exist, or it is not from today -- request it again
@@ -132,18 +151,22 @@ const ImageOfTheDay = apod => {
     }
 }
 
-const pictureGallery = rover => {
+// get and display randomly latest rover pictures
+const randomRoverPictures = rover => {
 
+    // only invoke to get rover pictures if not in store
     const get = store.getIn(['photos']);
     if(!get) {
         getRoverNavigationPhotos(store);
     }
 
+    //select random rover picture 
     const got = get[rover]  
     const len = got.length;
     const randomly = Math.floor(Math.random() * len);
     const pics = got[randomly];
     
+    //rover picture and information
     return (`
             <img src="${pics.img_src}" id="btn"/>
             <ul>
@@ -161,7 +184,7 @@ const pictureGallery = rover => {
 
 // ------------------------------------------------------  API CALLS
 
-// Example API call
+// API call to get APOD image
 const getImageOfTheDay = state => {
 
     fetch('http://localhost:3000/apod')
@@ -170,6 +193,7 @@ const getImageOfTheDay = state => {
 
 }
 
+// API call to get latest rover pictures
 const getRoverNavigationPhotos = state => {
 
     fetch('http://localhost:3000/photos')
