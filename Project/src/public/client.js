@@ -1,4 +1,4 @@
-// store app data pulled from NASA api
+// stores app's data
 let store = Immutable.Map({
     user: Immutable.Map({ name: 'Earthling' }),
     rovers: Immutable.List(['Perseverance', 'Curiosity', 'Opportunity', 'Spirit'])
@@ -9,13 +9,13 @@ const root1 = document.getElementById('root1');
 const root2 = document.getElementById('root2');
 const nav = document.getElementById('nav');
 
-// update store and renders app component
+// update store and renders app components
 const updateStore = (root, state, newState, app) => {
     store = state.merge(newState);
     render(root, app)(store);
 }
 
-// renders app component
+// renders app components
 const render = (root, app) => async state => {
     try {
         root.innerHTML = await app(state);
@@ -65,33 +65,11 @@ nav.addEventListener('click', event => {
         const button = document.getElementById('btn');
         button.scrollIntoView({behavior: 'smooth'});
 
-        // depending on which rover
-        if (content.includes('C')) {
-            
-            // get index of rover in array located in store
-            const roverIndex = rovers.indexOf('Curiosity');
-
-            // add the current index of active rover to store
-            const newState = store.setIn(['roverIndex'], roverIndex);
-
-            // merge new state of the app to store
-            store = store.merge(newState);
-           
-        } else if (content.includes('O')) {
-            const roverIndex = rovers.indexOf('Opportunity');
-            const newState = store.setIn(['roverIndex'], roverIndex);
-            store = store.merge(newState);
-
-        } else if (content.includes('P')) {
-            const roverIndex = rovers.indexOf('Perseverance');
-            const newState = store.setIn(['roverIndex'], roverIndex);
-            store = store.merge(newState);
-        }
-        else {
-            const roverIndex = rovers.indexOf('Spirit');
-            const newState = store.setIn(['roverIndex'], roverIndex);
-            store = store.merge(newState);
-        } 
+        const rover = rovers.filter(r => r === content)[0];
+        const roverIndex = rovers.indexOf(rover);
+        const newState = store.setIn(['roverIndex'], roverIndex);
+        store = store.merge(newState);
+         
     } else {
         // scroll to APOD Image
         const button0 = document.getElementById('btn0');
