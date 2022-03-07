@@ -16,16 +16,24 @@ const updateStore = (root, state, newState, app) => {
 }
 
 // renders app components
-const render = (root, app) => async state => {
+const render = (mark, app) => async state => {
     try {
-        root.innerHTML = await app(state);
+        mark.innerHTML = await app(state);
     } catch(err) {
-        root.innerHTML = "<h1>Loading...</h1>";
+        mark.innerHTML = "<h1>Loading...</h1>";
     }
 }
 
+const Nav = state => {
+    
+    const rovers = state.getIn(['rovers']).toJS();
+    return i => `<button class="btn">${rovers[i - 1]}</button>`;
+}
+
+const App0 = state => [1, 2, 3, 4].map(n => Nav(state)(n)).join('')
+
 // component renders APOD Image
-const App = state => {
+const App1 = state => {
 
     return (`
         ${Greeting(state.getIn(['user', 'name']))}
@@ -68,7 +76,7 @@ nav.addEventListener('click', event => {
         const rover = rovers.filter(r => r === content)[0];
         const roverIndex = rovers.indexOf(rover);
         const newState = store.setIn(['roverIndex'], roverIndex);
-        store = store.merge(newState);
+        updateStore(root2, store, newState, App2);
          
     } else {
         // scroll to APOD Image
@@ -80,7 +88,8 @@ nav.addEventListener('click', event => {
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
-    render(root1, App)(store);
+    render(nav, App0)(store);
+    render(root1, App1)(store);
     render(root2, App2)(store);
 });
 
@@ -93,13 +102,9 @@ setInterval(() => {
 
 // function to greet viewers
 const Greeting = name => {
-    if (name) {
-        return `
-            <h1>Welcome, ${name}!</h1>
-        `
-    }
+
     return `
-        <h1>Hello!</h1>
+        <h1>Welcome, ${name}!</h1>
     `
 }
 
@@ -155,7 +160,7 @@ const randomRoverPictures = rover => {
                 <li>Launch Date from Earth: ${pics.rover.launch_date}</li>
                 <li>Landing Date on Mars: ${pics.rover.landing_date}</li>
                 <li>Status: ${pics.rover.status}</li>
-                <li>Date of Photos Taken: ${pics.earth_date}</li>
+                <li>Date of Photos: ${pics.earth_date}</li>
             <ul/>
         `)
 }
