@@ -102,7 +102,7 @@ window.addEventListener('load', () => {
     render(root2, App2)(store);
 });
 
-// renders a random rover picture every 3 seconds
+// renders a random rover picture every few seconds
 setInterval(() => {
     render(root2, App2)(store);
 }, 5000);
