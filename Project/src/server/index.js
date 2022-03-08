@@ -17,7 +17,7 @@ const api_key = `api_key=${process.env.API_KEY}`;
 const baseUrl = 'https://api.nasa.gov/mars-photos/api/v1';
 
 // rover names
-const names = ['perseverance', 'curiosity', 'opportunity', 'spirit'];
+const names = ['curiosity', 'opportunity', 'spirit'];
 
 // API call to get rover latest photos
 app.get('/photos', async (req, res) => {

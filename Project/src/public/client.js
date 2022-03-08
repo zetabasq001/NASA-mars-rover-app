@@ -1,8 +1,7 @@
 // stores app's data
 let store = Immutable.Map({
     user: Immutable.Map({ name: 'Earthling' }),
-    rovers: Immutable.List(['Perseverance', 'Curiosity', 'Opportunity', 'Spirit']),
-    roverIndex: 0
+    rovers: Immutable.List(['Curiosity', 'Opportunity', 'Spirit']),
 });
 
 // add the markup to the page
@@ -22,7 +21,7 @@ const render = (mark, app) => async state => {
     try {
         mark.innerHTML = await app(state);
     } catch(err) {
-        mark.innerHTML = "<h1>Loading...</h1>";
+        mark.innerHTML = "<h1>Problem Loading...</h1>";
     }
 };
 
@@ -39,7 +38,7 @@ const createArray = n => {
 const Nav = state => {
     
     const rovers = state.getIn(['rovers']).toJS();
-    return i => `<button class="btn">${rovers[i - 1]}</button>`;
+    return i => `<button>${rovers[i - 1]}</button>`;
 };
 
 // component renders the navigation bar
@@ -65,9 +64,12 @@ const App1 = state => {
 const App2 = state => {
     
     const index = state.toJS().roverIndex;
+    if(!(index + 1)){
+        return '<p>Select a Martian Rover above!</p>';
+    }
 
     // function renders active rover pictures and information from the backend
-    return `${randomRoverPictures(index)}`;
+    return `${RoverPictures(index)}`;
 };
 
 // dynamic navigation bar
@@ -80,8 +82,7 @@ nav.addEventListener('click', event => {
     const rovers = store.getIn(['rovers']).toJS();
 
     // scroll down to rover section
-    const button = document.getElementById('btn');
-    button.scrollIntoView({behavior: 'smooth'});
+    
 
     // select the rover
     const rover = rovers.filter(r => r === content)[0];
@@ -92,6 +93,9 @@ nav.addEventListener('click', event => {
     // update the index of the rover in the store and render rover pictures
     const newState = store.setIn(['roverIndex'], roverIndex);
     updateStore(root2, store, newState, App2);
+
+    const button = document.getElementById('btn');
+    button.scrollIntoView({behavior: 'smooth'});
          
 });
 
@@ -101,11 +105,6 @@ window.addEventListener('load', () => {
     render(root1, App1)(store);
     render(root2, App2)(store);
 });
-
-// renders a random rover picture every few seconds
-setInterval(() => {
-    render(root2, App2)(store);
-}, 5000);
 
 // ------------------------------------------------------  COMPONENTS
 
@@ -133,45 +132,48 @@ const ImageOfTheDay = apod => {
                 <p>See today's featured video <a href="${apod.url}">here</a></p>
                 <p>${apod.title}</p>
                 <p>${apod.explanation}</p>
+                <p id="btn"></p>
             `)
         } else {
             return (`
                 <img src="${apod.url}"/>
                 <p>${apod.explanation}</p>
+                <p id="btn"></p>
             `)
         }
     }
 }
 
 // get and display randomly latest rover pictures
-const randomRoverPictures = rover => {
+const RoverPictures = rover => {
 
     // only invoke to get rover pictures if not in store
     const get = store.getIn(['photos']);
     if(!get) {
         getRoverNavigationPhotos(store);
     }
-
-    //select random rover picture 
-    const got = get[rover]  
-    const len = got.length;
-    const randomly = Math.floor(Math.random() * len);
-    const pics = got[randomly];
     
-    //rover picture and information
-    return (`
-            <img src="${pics.img_src}" id="btn"/>
-            <ul>
-                <li>${len} Most Recent Photo(s) of</li>
-                <li>Martian Rover Name: ${pics.rover.name}</li>
-                <li>Picture ID: ${pics.id}</li>
-                <li>Type of Camera: ${pics.camera.full_name}
-                <li>Launch Date from Earth: ${pics.rover.launch_date}</li>
-                <li>Landing Date on Mars: ${pics.rover.landing_date}</li>
-                <li>Status: ${pics.rover.status}</li>
-                <li>Date of Photos: ${pics.earth_date}</li>
-            <ul/>
-        `)
+    const pics = get[rover].slice(0, 5);
+    const size = pics.length;
+
+    const Pics = index => {
+       
+        return `<img src="${pics[index - 1].img_src}"/>
+                <p>Type of Camera: ${pics[index - 1].camera.full_name}</p>`
+    }
+
+    const Info = () => `<ul>
+                            <li>Martian Rover Name: ${pics[0].rover.name}</li>
+                            <li>Launch Date from Earth: ${pics[0].rover.launch_date}</li>
+                            <li>Landing Date on Mars: ${pics[0].rover.landing_date}</li>
+                            <li>Status: ${pics[0].rover.status}</li>
+                            <li>Date of Photos: ${pics[0].earth_date}</li>
+                        <ul/>`
+
+    const Display = () => Info() + createArray(size).map(n => Pics(n)).join('');
+    
+    // rover picture and information
+    return (`${Display()}`);
 }
 
 // ------------------------------------------------------  API CALLS
