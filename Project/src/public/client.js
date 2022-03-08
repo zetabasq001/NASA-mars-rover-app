@@ -1,7 +1,8 @@
 // stores app's data
 let store = Immutable.Map({
     user: Immutable.Map({ name: 'Earthling' }),
-    rovers: Immutable.List(['Perseverance', 'Curiosity', 'Opportunity', 'Spirit'])
+    rovers: Immutable.List(['Perseverance', 'Curiosity', 'Opportunity', 'Spirit']),
+    roverIndex: 0
 });
 
 // add the markup to the page
@@ -17,45 +18,56 @@ const updateStore = (root, state, newState, app) => {
 
 // renders app components
 const render = (mark, app) => async state => {
+
     try {
         mark.innerHTML = await app(state);
     } catch(err) {
         mark.innerHTML = "<h1>Loading...</h1>";
     }
+};
+
+const createArray = n => {
+    if(n === 1){
+        return [n];
+    } else {
+        return createArray(n-1).concat(n);
+    } 
 }
 
 const Nav = state => {
     
     const rovers = state.getIn(['rovers']).toJS();
     return i => `<button class="btn">${rovers[i - 1]}</button>`;
-}
+};
 
-const App0 = state => [1, 2, 3, 4].map(n => Nav(state)(n)).join('')
+const App0 = state => {
+
+    const len = state.getIn(['rovers']).toJS().length;
+    return createArray(len).map(n => Nav(state)(n)).join('');
+}
 
 // component renders APOD Image
 const App1 = state => {
 
     return (`
         ${Greeting(state.getIn(['user', 'name']))}
-        <p id="btn0">
+        <p>
             One of the most popular websites at NASA is the Astronomy Picture of the Day (APOD).
         <p>
         ${ImageOfTheDay(state.getIn(['image']))}
     `)
-}
+};
 
 // component renders mars rover pictures
 const App2 = state => {
-
-    // if the index of active rover is not set in store set to default 0
-    if (!state.toJS().roverIndex){
-        const newState =  state.setIn(['roverIndex'], 0);
-        store = newState.merge(state);
-    }
+    
+    const index = state.toJS().roverIndex;
 
     // function renders active rover pictures and information from the backend
-    return `${randomRoverPictures(state.toJS().roverIndex)}`;
-}
+    return `${randomRoverPictures(index)}`;
+};
+
+
 
 // dynamic navigation bar
 nav.addEventListener('click', event => {
@@ -65,25 +77,16 @@ nav.addEventListener('click', event => {
 
     // obtain the rovers from store
     const rovers = store.getIn(['rovers']).toJS();
-    
-    // if a rover button name is clicked
-    if (content !== 'APOD Image'){
 
-        // scroll down to rover section
-        const button = document.getElementById('btn');
-        button.scrollIntoView({behavior: 'smooth'});
+    // scroll down to rover section
+    const button = document.getElementById('btn');
+    button.scrollIntoView({behavior: 'smooth'});
 
-        const rover = rovers.filter(r => r === content)[0];
-        const roverIndex = rovers.indexOf(rover);
-        const newState = store.setIn(['roverIndex'], roverIndex);
-        updateStore(root2, store, newState, App2);
+    const rover = rovers.filter(r => r === content)[0];
+    const roverIndex = rovers.indexOf(rover);
+    const newState = store.setIn(['roverIndex'], roverIndex);
+    updateStore(root2, store, newState, App2);
          
-    } else {
-        // scroll to APOD Image
-        const button0 = document.getElementById('btn0');
-        button0.scrollIntoView({behavior: 'smooth'})      
-    }
-
 });
 
 // listening for load event because page should load before any JS is called
@@ -96,7 +99,7 @@ window.addEventListener('load', () => {
 // renders a random rover picture every 3 seconds
 setInterval(() => {
     render(root2, App2)(store);
-}, 3000);
+}, 5000);
 
 // ------------------------------------------------------  COMPONENTS
 
@@ -172,7 +175,7 @@ const getImageOfTheDay = state => {
 
     fetch('http://localhost:3000/apod')
         .then(res => res.json())
-        .then(apod => updateStore(root1, state, apod, App))
+        .then(apod => updateStore(root1, state, apod, App1))
 
 }
 
