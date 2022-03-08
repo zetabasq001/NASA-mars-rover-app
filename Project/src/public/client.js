@@ -63,6 +63,7 @@ const App1 = state => {
 // component renders mars rover pictures
 const App2 = state => {
     
+    // direct the viewer to select a rover via navigation bar
     const index = state.toJS().roverIndex;
     if(!(index + 1)){
         return '<p>Select a Martian Rover above!</p>';
@@ -81,9 +82,6 @@ nav.addEventListener('click', event => {
     // obtain the rovers from store
     const rovers = store.getIn(['rovers']).toJS();
 
-    // scroll down to rover section
-    
-
     // select the rover
     const rover = rovers.filter(r => r === content)[0];
 
@@ -94,6 +92,7 @@ nav.addEventListener('click', event => {
     const newState = store.setIn(['roverIndex'], roverIndex);
     updateStore(root2, store, newState, App2);
 
+    // scroll down to rover section
     const button = document.getElementById('btn');
     button.scrollIntoView({behavior: 'smooth'});
          
@@ -144,24 +143,27 @@ const ImageOfTheDay = apod => {
     }
 }
 
-// get and display randomly latest rover pictures
+// get and display latest rover pictures
 const RoverPictures = rover => {
 
-    // only invoke to get rover pictures if not in store
+    // if not in store get rover pictures
     const get = store.getIn(['photos']);
     if(!get) {
         getRoverNavigationPhotos(store);
     }
     
+    // get up to five latest (if available) pictures
     const pics = get[rover].slice(0, 5);
     const size = pics.length;
 
+    // html with rover pictures
     const Pics = index => {
        
         return `<img src="${pics[index - 1].img_src}"/>
                 <p>Type of Camera: ${pics[index - 1].camera.full_name}</p>`
     }
 
+    // html with rover information
     const Info = () => `<ul>
                             <li>Martian Rover Name: ${pics[0].rover.name}</li>
                             <li>Launch Date from Earth: ${pics[0].rover.launch_date}</li>
@@ -170,9 +172,10 @@ const RoverPictures = rover => {
                             <li>Date of Photos: ${pics[0].earth_date}</li>
                         <ul/>`
 
+    // builds html with rover pictures and information
     const Display = () => Info() + createArray(size).map(n => Pics(n)).join('');
     
-    // rover picture and information
+    // results to be displayed
     return (`${Display()}`);
 }
 
