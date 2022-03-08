@@ -92,10 +92,12 @@ nav.addEventListener('click', event => {
     const newState = store.setIn(['roverIndex'], roverIndex);
     updateStore(root2, store, newState, App2);
 
-    // scroll down to rover section
-    const button = document.getElementById('btn');
-    button.scrollIntoView({behavior: 'smooth'});
-         
+    // let rover photos render below before scrolling down
+    setTimeout(() => {      
+        const button = document.getElementById('btn');
+        button.scrollIntoView({behavior: 'smooth'});
+    }, 1000);
+      
 });
 
 // listening for load event because page should load before any JS is called
