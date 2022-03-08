@@ -26,6 +26,7 @@ const render = (mark, app) => async state => {
     }
 };
 
+// recursive function to enumerate the indices of the rover list
 const createArray = n => {
     if(n === 1){
         return [n];
@@ -34,12 +35,14 @@ const createArray = n => {
     } 
 }
 
+// higher order function builds the navigation bar
 const Nav = state => {
     
     const rovers = state.getIn(['rovers']).toJS();
     return i => `<button class="btn">${rovers[i - 1]}</button>`;
 };
 
+// component renders the navigation bar
 const App0 = state => {
 
     const len = state.getIn(['rovers']).toJS().length;
@@ -67,8 +70,6 @@ const App2 = state => {
     return `${randomRoverPictures(index)}`;
 };
 
-
-
 // dynamic navigation bar
 nav.addEventListener('click', event => {
 
@@ -82,8 +83,13 @@ nav.addEventListener('click', event => {
     const button = document.getElementById('btn');
     button.scrollIntoView({behavior: 'smooth'});
 
+    // select the rover
     const rover = rovers.filter(r => r === content)[0];
+
+    // determine its index
     const roverIndex = rovers.indexOf(rover);
+
+    // update the index of the rover in the store and render rover pictures
     const newState = store.setIn(['roverIndex'], roverIndex);
     updateStore(root2, store, newState, App2);
          
